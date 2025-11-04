@@ -41,8 +41,8 @@ button:active {
   background-color: #ffffff !important;
   box-shadow: none !important;
   border-radius: 0 !important;
+  /* Remove padding from cell, let input handle it */
   padding: 0 !important;
-  line-height: normal !important;
 }
 
 .ag-theme-quartz .ag-cell-inline-editing input {
@@ -50,22 +50,19 @@ button:active {
   box-shadow: none !important;
   border-radius: 0 !important;
   background: transparent !important;
-  padding: 6px 8px !important;
+  /* Match AG Grid's default cell padding minus the 2px border we added */
+  padding: calc(8px - 2px) 8px !important;
+  padding-left: 14px !important;
   margin: 0 !important;
   font-family: inherit !important;
   font-size: inherit !important;
-  line-height: inherit !important;
   outline: none !important;
   height: 100% !important;
   width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .ag-theme-quartz .ag-cell-inline-editing input:focus {
   outline: none !important;
   box-shadow: none !important;
-}
-
-/* Match regular cell padding for seamless transition */
-.ag-theme-quartz .ag-cell {
-  line-height: normal !important;
 }
