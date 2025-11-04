@@ -136,7 +136,7 @@ function App() {
 
       // Get the value from the first row
       const firstRowNode = api.getDisplayedRowAtIndex(startRow)
-      if (!firstRowNode) return
+      if (!firstRowNode || !firstRowNode.data) return
 
       const sourceValue = firstRowNode.data[colId]
       console.log(`Filling column ${colId} with value:`, sourceValue)
@@ -182,7 +182,7 @@ function App() {
     // For each row in the selection
     for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
       const rowNode = api.getDisplayedRowAtIndex(rowIndex)
-      if (!rowNode) continue
+      if (!rowNode || !rowNode.data) continue
 
       // Get the value from the first column
       const sourceValue = rowNode.data[firstColId]
@@ -219,10 +219,11 @@ function App() {
 
     for (let rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
       const rowNode = api.getDisplayedRowAtIndex(rowIndex)
-      if (rowNode) {
+      if (rowNode && rowNode.data) {
+        const nodeData = rowNode.data
         const rowData = columns.map(col => {
           const colId = col.getColId()
-          const value = rowNode.data[colId]
+          const value = nodeData[colId]
           return value !== null && value !== undefined ? String(value) : ''
         })
         rows.push(rowData)
@@ -236,7 +237,7 @@ function App() {
     navigator.clipboard.writeText(tsv)
   }, [])
 
-  const getContextMenuItems = useCallback((params: any) => {
+  const getContextMenuItems = useCallback((_params: any) => {
     return [
       {
         name: 'Fill Down',
@@ -254,8 +255,8 @@ function App() {
         },
         icon: '<span style="font-size: 16px;">→</span>'
       },
-      'separator',
-      'copy',
+      'separator' as const,
+      'copy' as const,
       {
         name: 'Copy with Headers',
         action: () => {
@@ -264,9 +265,9 @@ function App() {
         },
         icon: '<span style="font-size: 16px;">📋</span>'
       },
-      'paste',
-      'separator',
-      'export'
+      'paste' as const,
+      'separator' as const,
+      'export' as const
     ]
   }, [fillDown, fillRight, copyWithHeaders])
 
