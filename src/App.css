@@ -34,3 +34,28 @@ button:hover {
 button:active {
   background: #e0e0e0;
 }
+
+/* Excel-like cell editing styles */
+.ag-theme-quartz .ag-cell-inline-editing {
+  border: 2px solid #0078d4 !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.ag-theme-quartz .ag-cell-inline-editing input {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 4px 8px !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  outline: none !important;
+}
+
+.ag-theme-quartz .ag-cell-inline-editing input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
