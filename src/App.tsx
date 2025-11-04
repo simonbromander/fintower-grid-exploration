@@ -123,12 +123,20 @@ function App() {
 
     const range = cellRanges[0]
     const startRow = Math.min(range.startRow!.rowIndex, range.endRow!.rowIndex)
-    const endRow = Math.max(range.startRow!.rowIndex, range.endRow!.rowIndex)
+    let endRow = Math.max(range.startRow!.rowIndex, range.endRow!.rowIndex)
     const columns = range.columns
 
-    console.log(`Filling down from row ${startRow} to ${endRow}`)
-
     if (!columns || columns.length === 0) return
+
+    // Check if it's a single cell selection
+    const isSingleCell = startRow === endRow
+    if (isSingleCell) {
+      // Fill to the end of the table
+      endRow = api.getDisplayedRowCount() - 1
+      console.log(`Single cell selected, filling down to end of table (row ${endRow})`)
+    } else {
+      console.log(`Range selected, filling down from row ${startRow} to ${endRow}`)
+    }
 
     // For each column in the selection
     columns.forEach(column => {
@@ -169,10 +177,27 @@ function App() {
     const range = cellRanges[0]
     const startRow = Math.min(range.startRow!.rowIndex, range.endRow!.rowIndex)
     const endRow = Math.max(range.startRow!.rowIndex, range.endRow!.rowIndex)
-    const columns = range.columns
+    let columns = range.columns
 
-    if (!columns || columns.length < 2) {
-      console.log('Need at least 2 columns selected')
+    if (!columns || columns.length === 0) return
+
+    // Check if it's a single cell selection
+    const isSingleCell = columns.length === 1
+    if (isSingleCell) {
+      // Fill to the end of all columns
+      const allColumns = api.getAllDisplayedColumns()
+      const startColIndex = allColumns.findIndex(col => col.getColId() === columns[0].getColId())
+      if (startColIndex === -1) return
+
+      // Get all columns from start to end
+      columns = allColumns.slice(startColIndex)
+      console.log(`Single cell selected, filling right to end of table (${columns.length} columns)`)
+    } else {
+      console.log(`Range selected, filling right across ${columns.length} columns`)
+    }
+
+    if (columns.length < 2) {
+      console.log('Need at least 2 columns to fill')
       return
     }
 
@@ -299,8 +324,8 @@ function App() {
           <p style={{ margin: '4px 0' }}><strong>Excel-like Features:</strong></p>
           <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
             <li><strong>Undo/Redo:</strong> Ctrl+Z / Ctrl+Y (Cmd+Z / Cmd+Shift+Z on Mac)</li>
-            <li><strong>Fill Down:</strong> Ctrl+Shift+↓ or right-click menu</li>
-            <li><strong>Fill Right:</strong> Ctrl+Shift+→ or right-click menu</li>
+            <li><strong>Fill Down:</strong> Ctrl+Shift+↓ or right-click - Single cell fills to end, range fills within selection</li>
+            <li><strong>Fill Right:</strong> Ctrl+Shift+→ or right-click - Single cell fills to end, range fills within selection</li>
             <li><strong>Context Menu:</strong> Right-click for fill, copy, copy with headers, paste, export</li>
             <li><strong>Cell editing:</strong> Double-click, Enter, or F2 to edit</li>
             <li><strong>Arrow key navigation while editing:</strong> Exit edit mode and move to adjacent cell</li>
