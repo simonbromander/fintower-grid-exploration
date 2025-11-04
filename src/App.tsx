@@ -23,13 +23,14 @@ interface EmployeeRowData {
   location: string
   manager: string
   email: string
+  [key: string]: string | number // For dynamic access
 }
 
 type RowData = FTERowData | EmployeeRowData
 
 function App() {
   const [activeView, setActiveView] = useState<'fte' | 'employees'>('fte')
-  const gridRef = useRef<AgGridReact<RowData>>(null)
+  const gridRef = useRef<AgGridReact<any>>(null)
 
   // Generate month columns for 2026 and 2027
   const monthColumns = useMemo(() => {
@@ -170,8 +171,8 @@ function App() {
     }
   ], [])
 
-  const columnDefs = activeView === 'fte' ? fteColumnDefs : employeeColumnDefs
-  const rowData = activeView === 'fte' ? fteData : employeeData
+  const columnDefs: any = activeView === 'fte' ? fteColumnDefs : employeeColumnDefs
+  const rowData: any = activeView === 'fte' ? fteData : employeeData
 
   const defaultColDef = useMemo<ColDef>(() => ({
     minWidth: 100,
@@ -391,10 +392,10 @@ function App() {
       // Check if Ctrl (or Cmd on Mac) + Shift is pressed
       if (!(e.ctrlKey || e.metaKey) || !e.shiftKey) return
 
-      if (e.key === 'ArrowDown') {
+      if (e.key === 'd' || e.key === 'D') {
         e.preventDefault()
         fillDown()
-      } else if (e.key === 'ArrowRight') {
+      } else if (e.key === 'r' || e.key === 'R') {
         e.preventDefault()
         fillRight()
       }
@@ -449,8 +450,8 @@ function App() {
           <p style={{ margin: '4px 0' }}><strong>Excel-like Features:</strong></p>
           <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
             <li><strong>Undo/Redo:</strong> Ctrl+Z / Ctrl+Y (Cmd+Z / Cmd+Shift+Z on Mac)</li>
-            <li><strong>Fill Down:</strong> Ctrl+Shift+↓ or right-click - Single cell fills to end, range fills within selection</li>
-            <li><strong>Fill Right:</strong> Ctrl+Shift+→ or right-click - Single cell fills to end, range fills within selection</li>
+            <li><strong>Fill Down:</strong> Ctrl+Shift+D (Cmd+Shift+D on Mac) or right-click - Single cell fills to end, range fills within selection</li>
+            <li><strong>Fill Right:</strong> Ctrl+Shift+R (Cmd+Shift+R on Mac) or right-click - Single cell fills to end, range fills within selection</li>
             <li><strong>Context Menu:</strong> Right-click for fill, copy, copy with headers, paste, export</li>
             <li><strong>Cell editing:</strong> Double-click, Enter, or F2 to edit</li>
             <li><strong>Arrow key navigation while editing:</strong> Exit edit mode and move to adjacent cell</li>
