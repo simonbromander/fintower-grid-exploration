@@ -9,12 +9,26 @@ import './App.css'
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule, CellSelectionModule, ClipboardModule, RangeSelectionModule, MenuModule])
 
-interface RowData {
+interface FTERowData {
   department: string
   [key: string]: string | number // For dynamic month columns
 }
 
+interface EmployeeRowData {
+  name: string
+  department: string
+  title: string
+  startDate: string
+  salary: number
+  location: string
+  manager: string
+  email: string
+}
+
+type RowData = FTERowData | EmployeeRowData
+
 function App() {
+  const [activeView, setActiveView] = useState<'fte' | 'employees'>('fte')
   const gridRef = useRef<AgGridReact<RowData>>(null)
 
   // Generate month columns for 2026 and 2027
@@ -29,7 +43,7 @@ function App() {
     return cols
   }, [])
 
-  const [rowData] = useState<RowData[]>(() => {
+  const [fteData] = useState<FTERowData[]>(() => {
     const departments = [
       'Engineering',
       'Product',
@@ -44,7 +58,7 @@ function App() {
     ]
 
     return departments.map(dept => {
-      const row: RowData = { department: dept }
+      const row: FTERowData = { department: dept }
       // Initialize with random FTE values between 2 and 20
       monthColumns.forEach(month => {
         row[month] = Math.floor(Math.random() * 18) + 2
@@ -53,8 +67,23 @@ function App() {
     })
   })
 
-  const columnDefs: ColDef<RowData>[] = useMemo(() => {
-    const cols: ColDef<RowData>[] = [
+  const [employeeData] = useState<EmployeeRowData[]>([
+    { name: 'Alice Johnson', department: 'Engineering', title: 'Senior Software Engineer', startDate: '2020-03-15', salary: 145000, location: 'San Francisco', manager: 'Bob Smith', email: 'alice.j@company.com' },
+    { name: 'Bob Smith', department: 'Engineering', title: 'Engineering Manager', startDate: '2018-01-10', salary: 175000, location: 'San Francisco', manager: 'Carol White', email: 'bob.s@company.com' },
+    { name: 'Carol White', department: 'Engineering', title: 'VP of Engineering', startDate: '2016-06-01', salary: 250000, location: 'San Francisco', manager: 'David Chen', email: 'carol.w@company.com' },
+    { name: 'David Chen', department: 'Product', title: 'CEO', startDate: '2015-01-01', salary: 350000, location: 'San Francisco', manager: '', email: 'david.c@company.com' },
+    { name: 'Emma Davis', department: 'Product', title: 'Product Manager', startDate: '2021-09-01', salary: 135000, location: 'New York', manager: 'Frank Miller', email: 'emma.d@company.com' },
+    { name: 'Frank Miller', department: 'Product', title: 'Head of Product', startDate: '2019-04-15', salary: 190000, location: 'New York', manager: 'David Chen', email: 'frank.m@company.com' },
+    { name: 'Grace Lee', department: 'Design', title: 'Senior Designer', startDate: '2020-07-20', salary: 125000, location: 'Remote', manager: 'Henry Wilson', email: 'grace.l@company.com' },
+    { name: 'Henry Wilson', department: 'Design', title: 'Design Lead', startDate: '2017-11-01', salary: 155000, location: 'Los Angeles', manager: 'David Chen', email: 'henry.w@company.com' },
+    { name: 'Iris Taylor', department: 'Marketing', title: 'Marketing Manager', startDate: '2022-02-01', salary: 115000, location: 'Chicago', manager: 'Jack Brown', email: 'iris.t@company.com' },
+    { name: 'Jack Brown', department: 'Marketing', title: 'CMO', startDate: '2019-08-15', salary: 220000, location: 'Chicago', manager: 'David Chen', email: 'jack.b@company.com' },
+    { name: 'Kate Anderson', department: 'Sales', title: 'Account Executive', startDate: '2021-05-10', salary: 95000, location: 'Boston', manager: 'Liam Garcia', email: 'kate.a@company.com' },
+    { name: 'Liam Garcia', department: 'Sales', title: 'VP of Sales', startDate: '2018-03-20', salary: 200000, location: 'Boston', manager: 'David Chen', email: 'liam.g@company.com' },
+  ])
+
+  const fteColumnDefs: ColDef<FTERowData>[] = useMemo(() => {
+    const cols: ColDef<FTERowData>[] = [
       {
         field: 'department',
         headerName: 'Department',
@@ -82,6 +111,67 @@ function App() {
 
     return cols
   }, [monthColumns])
+
+  const employeeColumnDefs: ColDef<EmployeeRowData>[] = useMemo(() => [
+    {
+      field: 'name',
+      headerName: 'Name',
+      editable: false,
+      pinned: 'left',
+      width: 180,
+      cellStyle: { fontWeight: 'bold', backgroundColor: '#f8f9fa' }
+    },
+    {
+      field: 'department',
+      headerName: 'Department',
+      editable: true,
+      width: 150
+    },
+    {
+      field: 'title',
+      headerName: 'Title',
+      editable: true,
+      width: 200
+    },
+    {
+      field: 'startDate',
+      headerName: 'Start Date',
+      editable: true,
+      width: 130
+    },
+    {
+      field: 'salary',
+      headerName: 'Salary',
+      editable: true,
+      width: 130,
+      valueFormatter: (params) => params.value ? '$' + params.value.toLocaleString() : '',
+      valueParser: (params) => {
+        const num = Number(params.newValue.replace(/[^0-9.-]+/g, ''))
+        return isNaN(num) ? 0 : num
+      }
+    },
+    {
+      field: 'location',
+      headerName: 'Location',
+      editable: true,
+      width: 150
+    },
+    {
+      field: 'manager',
+      headerName: 'Manager',
+      editable: true,
+      width: 180
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      editable: true,
+      width: 220
+    }
+  ], [])
+
+  const columnDefs = activeView === 'fte' ? fteColumnDefs : employeeColumnDefs
+  const rowData = activeView === 'fte' ? fteData : employeeData
 
   const defaultColDef = useMemo<ColDef>(() => ({
     minWidth: 100,
@@ -319,7 +409,42 @@ function App() {
   return (
     <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', background: '#ffffff' }}>
       <div style={{ padding: '20px', borderBottom: '1px solid #ccc', background: '#f8f9fa' }}>
-        <h1 style={{ margin: '0 0 16px 0', fontSize: '24px' }}>FTE Planner 2026-2027 - Excel-like Interactions</h1>
+        <h1 style={{ margin: '0 0 16px 0', fontSize: '24px' }}>
+          {activeView === 'fte' ? 'FTE Planner 2026-2027' : 'Employee Registry'} - Excel-like Interactions
+        </h1>
+
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          <button
+            onClick={() => setActiveView('fte')}
+            style={{
+              padding: '10px 20px',
+              fontSize: '14px',
+              fontWeight: activeView === 'fte' ? 'bold' : 'normal',
+              background: activeView === 'fte' ? '#0078d4' : '#ffffff',
+              color: activeView === 'fte' ? '#ffffff' : '#333',
+              border: activeView === 'fte' ? '2px solid #0078d4' : '2px solid #ccc',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            FTE Planner
+          </button>
+          <button
+            onClick={() => setActiveView('employees')}
+            style={{
+              padding: '10px 20px',
+              fontSize: '14px',
+              fontWeight: activeView === 'employees' ? 'bold' : 'normal',
+              background: activeView === 'employees' ? '#0078d4' : '#ffffff',
+              color: activeView === 'employees' ? '#ffffff' : '#333',
+              border: activeView === 'employees' ? '2px solid #0078d4' : '2px solid #ccc',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Employee Registry
+          </button>
+        </div>
         <div style={{ fontSize: '14px', color: '#666' }}>
           <p style={{ margin: '4px 0' }}><strong>Excel-like Features:</strong></p>
           <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
